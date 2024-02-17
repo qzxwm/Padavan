@@ -149,7 +149,10 @@ start_zero() {
 	logger -t "zerotier" "正在启动zerotier"
 	kill_z
 	start_instance 'zerotier'
-
+	result=$(nvram get zerotiermoon_enable)  
+	if [ "$result" -eq 1 ]; then
+		creat_moon  
+	fi
 }
 kill_z() {
 	zerotier_process=$(pidof zerotier-one)
@@ -164,6 +167,10 @@ stop_zero() {
 	zero_route "del"
 	kill_z
 	rm -rf $config_path
+	result=$(nvram get zerotiermoon_enable)
+  	if [ "$result" -eq 0 ]; then
+		remove_moon  
+	fi
 }
 
 #创建moon节点
@@ -235,17 +242,9 @@ remove_moon(){
 case $1 in
 start)
 	start_zero
-	result=$(nvram get zerotiermoon_enable)  
-	if [ "$result" -eq 1 ]; then
-		creat_moon  
-	fi
 	;;
 stop)
 	stop_zero
- 	result=$(nvram get zerotiermoon_enable)
-  	if [ "$result" -eq 0 ]; then
-		remove_moon  
-	fi
 	;;
 start_moon)
 	creat_moon
