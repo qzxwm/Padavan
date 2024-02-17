@@ -231,7 +231,7 @@ awk -F":\"" '{print $2}'`
 remove_moon(){
 	zmoonid="$(nvram get zerotiermoon_id)"
 	
-	if [ ! -n "$zmoonid"]; then
+	if [ ! -n "$zmoonid" ]; then
 		rm -f $config_path/moons.d/000000$zmoonid.moon
 		rm -f $config_path/moon.json
 		nvram set zerotiermoon_id=""
