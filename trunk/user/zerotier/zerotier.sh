@@ -235,9 +235,17 @@ remove_moon(){
 case $1 in
 start)
 	start_zero
+	result=$(nvram get zerotiermoon_enable)  
+	if [ "$result" -eq 1 ]; then
+		creat_moon  
+	fi
 	;;
 stop)
 	stop_zero
+ 	result=$(nvram get zerotiermoon_enable)
+  	if [ "$result" -eq 0 ]; then
+		remove_moon  
+	fi
 	;;
 start_moon)
 	creat_moon
