@@ -100,12 +100,14 @@ rules() {
 	zt0=$(ifconfig | grep zt | awk '{print $1}')
 	logger -t "zerotier" "zt interface $zt0 is started!"
 	del_rules
+ 	sleep 2
 	iptables -A INPUT -i $zt0 -j ACCEPT
 	iptables -A FORWARD -i $zt0 -o $zt0 -j ACCEPT
 	iptables -A FORWARD -i $zt0 -j ACCEPT
 	if [ $nat_enable -eq 1 ]; then
 		iptables -t nat -A POSTROUTING -o $zt0 -j MASQUERADE
-		ip_segment="$(ip route | grep "dev $zt0 proto" | awk '{print $1}')"
+  		sleep 2
+		ip_segment=$(ip route | grep "dev $zt0  proto kernel" | awk '{print $1}')
 		iptables -t nat -A POSTROUTING -s $ip_segment -j MASQUERADE
 		zero_route "add"
 	fi
@@ -115,7 +117,7 @@ rules() {
 
 del_rules() {
 	zt0=$(ifconfig | grep zt | awk '{print $1}')
-	ip_segment=`ip route | grep "dev $zt0  proto" | awk '{print $1}'`
+	ip_segment=$(ip route | grep "dev $zt0  proto kernel" | awk '{print $1}')
 	iptables -D FORWARD -i $zt0 -j ACCEPT 2>/dev/null
 	iptables -D FORWARD -o $zt0 -j ACCEPT 2>/dev/null
 	iptables -D FORWARD -i $zt0 -o $zt0 -j ACCEPT
@@ -147,7 +149,10 @@ start_zero() {
 	logger -t "zerotier" "正在启动zerotier"
 	kill_z
 	start_instance 'zerotier'
-
+	result=$(nvram get zerotiermoon_enable)  
+	if [ "$result" -eq 1 ]; then
+		creat_moon  
+	fi
 }
 kill_z() {
 	zerotier_process=$(pidof zerotier-one)
@@ -162,6 +167,10 @@ stop_zero() {
 	zero_route "del"
 	kill_z
 	rm -rf $config_path
+	result=$(nvram get zerotiermoon_enable)
+  	if [ "$result" -eq 0 ]; then
+		remove_moon  
+	fi
 }
 
 #创建moon节点
@@ -175,7 +184,9 @@ creat_moon(){
 	logger -t "zerotier" "搭建ZeroTier的Moon中转服务器，生成moon配置文件"
 	if [ -z "$moonip" ]; then
 		#自动获取wanip
-		ip_addr=`ifconfig -a ppp0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+		#ip_addr=`ifconfig -a ppp0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+  		ip_addr=`curl http://pns.alicdn.com/speed_check_servers?n=17: | grep -Eo "\"ip\":\"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | 
+awk -F":\"" '{print $2}'`
 	#elif [ $ckStep2 -eq 0 ]; then
 		#不是ip
 	#	ip_addr = `curl $moonip`
@@ -220,7 +231,7 @@ creat_moon(){
 remove_moon(){
 	zmoonid="$(nvram get zerotiermoon_id)"
 	
-	if [ ! -n "$zmoonid"]; then
+	if [ ! -n "$zmoonid" ]; then
 		rm -f $config_path/moons.d/000000$zmoonid.moon
 		rm -f $config_path/moon.json
 		nvram set zerotiermoon_id=""
@@ -235,6 +246,12 @@ start)
 stop)
 	stop_zero
 	;;
+start_moon)
+	creat_moon
+	;;
+stop_moon)
+	remove_moon
+        ;;
 *)
 	echo "check"
 	#exit 0
