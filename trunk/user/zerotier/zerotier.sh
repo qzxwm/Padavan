@@ -177,7 +177,9 @@ creat_moon(){
 	logger -t "zerotier" "搭建ZeroTier的Moon中转服务器，生成moon配置文件"
 	if [ -z "$moonip" ]; then
 		#自动获取wanip
-		ip_addr=`ifconfig -a ppp0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+		#ip_addr=`ifconfig -a ppp0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+  		ip_addr=`curl http://pns.alicdn.com/speed_check_servers?n=17: | grep -Eo "\"ip\":\"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | 
+awk -F":\"" '{print $2}'`
 	#elif [ $ckStep2 -eq 0 ]; then
 		#不是ip
 	#	ip_addr = `curl $moonip`
