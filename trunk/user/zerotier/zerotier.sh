@@ -174,7 +174,7 @@ creat_moon(){
 	ckStep2=`echo $moonip | egrep $regex | wc -l`
 
 	logger -t "zerotier" "搭建ZeroTier的Moon中转服务器，生成moon配置文件"
-	if [ -z "$moonip" ]||[ $ckStep2 -eq 0 ] ; then
+	if [ -z "$moonip" ] ; then
 		#自动获取wanip || 不是ip
 		#ip_addr=`ifconfig -a ppp0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
   		ip_addr=`curl http://pns.alicdn.com/speed_check_servers?n=17: | grep -Eo "\"ip\":\"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | awk -F":\"" '{print $2}'`
@@ -234,12 +234,6 @@ start)
 stop)
 	stop_zero
 	;;
-start_moon)
-	creat_moon
-	;;
-stop_moon)
-	remove_moon
-        ;;
 *)
 	echo "check"
 	#exit 0
