@@ -816,6 +816,9 @@ struct nvram_pair router_defaults[] = {
 	{ "zerotier_nat", "0" },
 	{ "zerotier_secret", "" },
 	{ "zero_staticnum_x", "0" },
+	{ "zerotiermoon_enable", "0" },
+	{ "zerotiermoon_ip", "" },
+	{ "zerotier_moonid", "" },
 
 	{ "ss_watchcat", "1" },
 	{ "ss_update_chnroute", "0" },
